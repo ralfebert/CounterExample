@@ -7,13 +7,25 @@
 
 import SwiftUI
 
-class CounterModel: ObservableObject {
+class Person {
 
-    var value = 0
+    let name: String
 
-    func increment() {
+    init(name: String) {
+        self.name = name
+    }
+
+}
+
+class RandomPersonModel: ObservableObject {
+
+    var person: Person?
+
+    let values = [Person(name: "Alice"), Person(name: "Bob")]
+
+    func pickRandomPerson() {
         DispatchQueue.concurrentPerform(iterations: 10000) { idx in
-            self.value += 1
+            self.person = values.randomElement()!
             // Only send the change notification every 100 iterations makes data races much more likely
             if (idx + 1) % 100 == 0 {
                 DispatchQueue.main.async {
@@ -26,15 +38,15 @@ class CounterModel: ObservableObject {
 }
 
 struct ContentView: View {
-    @StateObject var counterModel = CounterModel()
+    @StateObject var model = RandomPersonModel()
 
     var body: some View {
         VStack {
-            Text("Counter value: \(self.counterModel.value)")
+            Text("Person: \(self.model.person.map(\.name) ?? "-")")
                 .padding()
 
             Button("Increment") {
-                self.counterModel.increment()
+                self.model.pickRandomPerson()
             }
         }
     }
