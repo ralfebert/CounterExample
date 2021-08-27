@@ -9,10 +9,18 @@ import SwiftUI
 
 class CounterModel: ObservableObject {
 
-    @Published var value = 0
+    var value = 0
 
     func increment() {
-        self.value += 1
+        DispatchQueue.concurrentPerform(iterations: 10000) { idx in
+            self.value += 1
+            // Only send the change notification every 100 iterations makes data races much more likely
+            if (idx + 1) % 100 == 0 {
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            }
+        }
     }
 
 }
